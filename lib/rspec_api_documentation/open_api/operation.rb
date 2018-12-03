@@ -9,7 +9,7 @@ module RspecApiDocumentation
       add_setting :consumes
       add_setting :produces
       add_setting :parameters, :default => [], :schema => [Parameter]
-      add_setting :responses, :required => true, :schema => Responses
+      add_setting :responses, :required => true, :schema => { String => Response }
       add_setting :schemes
       add_setting :deprecated, :default => false
       add_setting :security
