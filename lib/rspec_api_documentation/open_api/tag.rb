@@ -3,7 +3,7 @@ module RspecApiDocumentation
     class Tag < Node
       add_setting :name, :required => true
       add_setting :description
-      add_setting :externalDocs
+      # add_setting :externalDocs, :schema => ExternalDocs
     end
   end
 end
