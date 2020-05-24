@@ -73,6 +73,7 @@ module RspecApiDocumentation::DSL
       def authentication(type, value, opts = {})
         name, new_opts =
           case type
+          when :bearer then [opts[:name], opts.merge(type: type)]
           when :basic then ['Authorization', opts.merge(type: type)]
           when :apiKey then [opts[:name], opts.merge(type: type, in: :header)]
           else raise 'Not supported type for authentication'
