@@ -87,6 +87,11 @@ module RspecApiDocumentation
 
     def record_response_body(response_content_type, response_body)
       return nil if response_body.empty?
+
+      # even when the response is has charset UTF8 still the encoding is Encoding::ASCII_8BIT
+      # forcing the response to UTF-8
+      response_body.force_encoding("UTF-8") if response_body.is_utf8?
+
       if response_body.encoding == Encoding::ASCII_8BIT
         "[binary data]"
       else
