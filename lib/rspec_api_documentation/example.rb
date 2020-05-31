@@ -67,9 +67,13 @@ module RspecApiDocumentation
     end
 
     def remap_headers(requests, key, headers_to_include)
+      # TODO: sometimes the requests is nil for some rspec
+      return unless requests
       return requests unless headers_to_include
+
       requests.each.with_index do |request_hash, index|
         next unless request_hash.key?(key)
+
         headers = request_hash[key]
         request_hash[key] = headers.select{ |key, _| headers_to_include.map(&:downcase).include?(key.downcase) }
         requests[index] = request_hash
