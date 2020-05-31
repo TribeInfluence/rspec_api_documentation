@@ -202,6 +202,8 @@ module RspecApiDocumentation
       def extract_request_body(example)
         if example.respond_to?(:request_body)
           OpenApi::RequestBody.new(
+            description: example.request_body[:description],
+            required: example.request_body[:required],
             content: {
               example.request_body[:type] || 'application/json' => OpenApi::Media.new(
                 schema: OpenApi::Schema.new(example.request_body[:schema]),
