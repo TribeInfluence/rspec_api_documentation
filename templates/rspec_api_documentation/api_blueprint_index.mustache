@@ -1,5 +1,6 @@
 FORMAT: 1A
 # {{ api_name }}
+{{ api_explanation }}
 {{# sections }}
 
 # Group {{ resource_name }}
@@ -27,6 +28,18 @@ explanation: {{ explanation }}
 + Parameters
 {{# parameters }}
   + {{ name }}{{# example }}: {{ example }}{{/ example }}{{# properties_description }} ({{ properties_description }}){{/ properties_description }}{{# description }} - {{ description }}{{/ description }}
+      {{# has_default?}}
+      + Default: `{{default}}`
+      {{/ has_default?}}
+      {{# has_enum?}}
+      + Members
+        {{# enum}}
+          + `{{.}}`
+        {{/ enum}}
+      {{/ has_enum?}}
+  {{# annotations }}
+      {{ . }}
+  {{/ annotations }}
 {{/ parameters }}
 {{/ has_parameters? }}
 {{# has_attributes? }}
@@ -34,6 +47,18 @@ explanation: {{ explanation }}
 + Attributes (object)
 {{# attributes }}
   + {{ name }}{{# example }}: {{ example }}{{/ example }}{{# properties_description }} ({{ properties_description }}){{/ properties_description }}{{# description }} - {{ description }}{{/ description }}
+      {{# has_default?}}
+      + Default: `{{default}}`
+      {{/ has_default?}}
+      {{# has_enum?}}
+      + Members
+        {{# enum}}
+          + `{{.}}`
+        {{/ enum}}
+      {{/ has_enum?}}
+  {{# annotations }}
+      {{ . }}
+  {{/ annotations }}
 {{/ attributes }}
 {{/ has_attributes? }}
 {{# http_methods }}

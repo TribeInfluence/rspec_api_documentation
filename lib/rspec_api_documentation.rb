@@ -52,25 +52,27 @@ module RspecApiDocumentation
   module OpenApi
     extend ActiveSupport::Autoload
 
-    autoload :Helper
-    autoload :Node
-    autoload :Root
-    autoload :Info
+    autoload :Components
     autoload :Contact
+    autoload :ExternalDocs
+    autoload :Flow
+    autoload :Header
+    autoload :Helper
+    autoload :Info
     autoload :License
-    autoload :Paths
-    autoload :Path
-    autoload :Tag
+    autoload :Media
+    autoload :Node
     autoload :Operation
     autoload :Parameter
-    autoload :Responses
+    autoload :Path
+    autoload :RequestBody
     autoload :Response
-    autoload :Example
-    autoload :Headers
-    autoload :Header
+    autoload :Root
     autoload :Schema
-    autoload :SecurityDefinitions
-    autoload :SecuritySchema
+    autoload :SecurityScheme
+    autoload :Server
+    autoload :Tag
+    autoload :Variable
   end
 
   module Views

@@ -1,12 +1,6 @@
 module RspecApiDocumentation
   module OpenApi
     class Node
-      # this is used to define class of incoming option attribute
-      # If +false+ then do not create new setting
-      # If +true+ then create new setting with raw passed value
-      # If RspecApiDocumentation::OpenApi::Node then create new setting and wrap it in this class
-      CHILD_CLASS = false
-
       # This attribute allow us to hide some of children through configuration file
       attr_accessor :hide
 
@@ -36,14 +30,15 @@ module RspecApiDocumentation
         opts.each do |name, value|
           if name.to_s == 'hide'
             self.hide = value
-          elsif self.class::CHILD_CLASS
-            add_setting name, :value => self.class::CHILD_CLASS === true ? value : self.class::CHILD_CLASS.new(value)
           elsif setting_exist?(name.to_sym)
             schema = setting_schema(name)
             converted =
-              case
-              when schema.is_a?(Array) && schema[0] <= Node then value.map { |v| v.is_a?(schema[0]) ? v : schema[0].new(v) }
-              when schema <= Node then value.is_a?(schema) ? value : schema.new(value)
+              if schema.is_a?(Hash) && schema.values[0] <= Node
+                Hash[value.map { |k, v| [k, v.is_a?(schema.values[0]) ? v : schema.values[0].new(v)] }]
+              elsif schema.is_a?(Array) && schema[0] <= Node
+                value.map { |v| v.is_a?(schema[0]) ? v : schema[0].new(v) }
+              elsif schema <= Node
+                value.is_a?(schema) ? value : schema.new(value)
               else
                 value
               end
@@ -69,7 +64,13 @@ module RspecApiDocumentation
         settings[name] = opts[:value] if opts[:value]
 
         define_singleton_method("#{name}_schema") { opts[:schema] || NilClass }
-        define_singleton_method("#{name}=") { |value| settings[name] = value }
+        define_singleton_method("#{name}=") do |value|
+          if setting[name].is_a?(Hash) && value.is_a?(Hash)
+            value.each { |k, v| setting[name][k] = setting[name][k] ? setting[name][k].merge(v) : v }
+          else
+            settings[name] = value
+          end
+        end
         define_singleton_method("#{name}") do
           if settings.has_key?(name)
             settings[name]
@@ -94,6 +95,8 @@ module RspecApiDocumentation
           when value.is_a?(Array) && value[0].is_a?(Node)
             tmp = value.select { |v| !v.hide }.map { |v| v.as_json }
             hash[name] = tmp unless tmp.empty?
+          when value.is_a?(Hash) && value.values[0].is_a?(Node)
+            hash[name] = Hash[value.select { |k, v| !v.hide }.map { |k, v| [k, v.as_json] }]
           else
             hash[name] = value
           end unless value.nil?
