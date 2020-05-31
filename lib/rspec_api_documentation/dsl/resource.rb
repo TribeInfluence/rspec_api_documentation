@@ -54,6 +54,10 @@ module RspecApiDocumentation::DSL
         context(*args, &block)
       end
 
+      def request_body(body = nil)
+        safe_metadata(:request_body, body)
+      end
+
       def parameter(name, *args)
         parameters.push(field_specification(name, *args))
       end
