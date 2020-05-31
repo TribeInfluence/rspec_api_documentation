@@ -54,6 +54,10 @@ module RspecApiDocumentation::DSL
         context(*args, &block)
       end
 
+      def request_body(body = nil)
+        safe_metadata(:request_body, body)
+      end
+
       def parameter(name, *args)
         parameters.push(field_specification(name, *args))
       end
@@ -73,6 +77,7 @@ module RspecApiDocumentation::DSL
       def authentication(type, value, opts = {})
         name, new_opts =
           case type
+          when :bearer then [opts[:name], opts.merge(type: type)]
           when :basic then ['Authorization', opts.merge(type: type)]
           when :apiKey then [opts[:name], opts.merge(type: type, in: :header)]
           else raise 'Not supported type for authentication'
