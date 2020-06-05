@@ -201,13 +201,14 @@ module RspecApiDocumentation
 
       def extract_request_body(example)
         if example.respond_to?(:request_body)
+          request_body_from_last_request = !example.requests.empty? && example.requests.last[:request_body_hash]
           OpenApi::RequestBody.new(
             description: example.request_body[:description],
             required: example.request_body[:required],
             content: {
               example.request_body[:type] || 'application/json' => OpenApi::Media.new(
                 schema: OpenApi::Schema.new(example.request_body[:schema]),
-                example: example.request_body[:example]
+                example: example.request_body[:example] || request_body_from_last_request
               )
             }
           )
