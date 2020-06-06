@@ -33,12 +33,15 @@ module RspecApiDocumentation
           elsif setting_exist?(name.to_sym)
             schema = setting_schema(name)
             converted =
+              # Type of converted value is encoded into how the schema is defined for a node
+              # if node schema is defined as as '' => Schema, it is expected that converted value has to be Hash
+              # if node schema is defined as as [Schema], it is expected that converted value has to be Array
               if schema.is_a?(Hash) && schema.values[0] <= Node
-                Hash[value.map { |k, v| [k, v.is_a?(schema.values[0]) ? v : schema.values[0].new(v)] }]
+                Hash[value.map { |k, v| [k, v.is_a?(schema.values[0]) ? v : map_value_to_schema(v, schema.values[0])] }]
               elsif schema.is_a?(Array) && schema[0] <= Node
-                value.map { |v| v.is_a?(schema[0]) ? v : schema[0].new(v) }
+                value.map { |v| v.is_a?(schema[0]) ? v : map_value_to_schema(v, schema[0]) }
               elsif schema <= Node
-                value.is_a?(schema) ? value : schema.new(value)
+                value.is_a?(schema) ? value : map_value_to_schema(value, schema)
               else
                 value
               end
@@ -47,6 +50,13 @@ module RspecApiDocumentation
             public_send("#{name}=", value) if respond_to?("#{name}=")
           end
         end
+      end
+
+      def map_value_to_schema(value, schema)
+        return value if value.is_a?(Reference)
+        return Reference.new(value) if value.respond_to?(:has_key?) && value.has_key?("$ref")
+
+        schema.new(value)
       end
 
       def assign_setting(name, value); public_send("#{name}=", value) unless value.nil? end

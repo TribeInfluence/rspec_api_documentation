@@ -73,6 +73,7 @@ module RspecApiDocumentation
     autoload :Server
     autoload :Tag
     autoload :Variable
+    autoload :Reference
   end
 
   module Views
