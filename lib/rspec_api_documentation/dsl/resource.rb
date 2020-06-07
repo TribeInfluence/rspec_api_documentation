@@ -58,6 +58,11 @@ module RspecApiDocumentation::DSL
         safe_metadata(:request_body, body)
       end
 
+      def response_schema(schema_ref = nil)
+        # not doing safe_metadata as the schema can be different for errors responses
+        metadata[:response_schema] = schema_ref
+      end
+
       def parameter(name, *args)
         parameters.push(field_specification(name, *args))
       end

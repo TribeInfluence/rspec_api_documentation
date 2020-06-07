@@ -109,7 +109,7 @@ module RspecApiDocumentation
       end
 
       def process_responses(responses, example)
-        schema = extract_schema(example.respond_to?(:response_fields) ? example.response_fields : nil)
+        schema = build_schema_for_response(example)
         example.requests.each do |request|
           response = OpenApi::Response.new(
             description: example.description
@@ -137,6 +137,18 @@ module RspecApiDocumentation
 
           responses[request[:response_status].to_s] = response
         end
+      end
+
+      def build_schema_for_response(example)
+        return create_schema_ref(example.response_schema) if example.respond_to?(:response_schema)
+
+        extract_schema(example.response_fields) if example.respond_to?(:response_fields)
+      end
+
+      def create_schema_ref(schema_name)
+        return unless schema_name
+
+        OpenApi::Reference.new("$ref": "#/components/schemas/#{schema_name}")
       end
 
       def extract_schema(fields)
@@ -201,13 +213,14 @@ module RspecApiDocumentation
 
       def extract_request_body(example)
         if example.respond_to?(:request_body)
+          request_body_from_last_request = !example.requests.empty? && example.requests.last[:request_body_hash]
           OpenApi::RequestBody.new(
             description: example.request_body[:description],
             required: example.request_body[:required],
             content: {
               example.request_body[:type] || 'application/json' => OpenApi::Media.new(
                 schema: OpenApi::Schema.new(example.request_body[:schema]),
-                example: example.request_body[:example]
+                example: example.request_body[:example] || request_body_from_last_request
               )
             }
           )

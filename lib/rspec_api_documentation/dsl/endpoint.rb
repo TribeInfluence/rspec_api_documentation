@@ -43,21 +43,21 @@ module RspecApiDocumentation::DSL
 
       if http_method == :get && !query_string.blank?
         path_or_query += "?#{query_string}"
+      elsif [:put, :post, :patch].include?(http_method) && example.metadata[:request_body]
+        params_or_body = generate_request_body(example.metadata[:request_body][:schema])
+      elsif respond_to?(:raw_post)
+        params_or_body = raw_post
       else
-        if respond_to?(:raw_post)
-          params_or_body = raw_post
+        formatter = RspecApiDocumentation.configuration.request_body_formatter
+        case formatter
+        when :json
+          params_or_body = params.empty? ? nil : params.to_json
+        when :xml
+          params_or_body = params.to_xml
+        when Proc
+          params_or_body = formatter.call(params)
         else
-          formatter = RspecApiDocumentation.configuration.request_body_formatter
-          case formatter
-          when :json
-            params_or_body = params.empty? ? nil : params.to_json
-          when :xml
-            params_or_body = params.to_xml
-          when Proc
-            params_or_body = formatter.call(params)
-          else
-            params_or_body = params
-          end
+          params_or_body = params
         end
       end
 
@@ -66,6 +66,39 @@ module RspecApiDocumentation::DSL
 
     def query_string
       build_nested_query(params || {})
+    end
+
+    def generate_request_body(request_body_schema)
+      # schema: {
+      #  type: 'object',
+      #  required: ['name'],
+      #  properties: {
+      #    "name": {
+      #      "type": 'string'
+      #    },
+      #    "description": {
+      #      "type": 'string'
+      #    },
+      #    'address':{
+      #      'type': 'object',
+      #      'properties': {
+      #        'street': 'string'
+      #       }
+      #     }
+      #   }
+      # }
+      request_body = {}
+      request_body_schema[:properties].each_pair do |key, value|
+        case value[:type]
+        when 'string', 'number', 'integer', 'boolean', 'array'
+          request_body[key] = respond_to?(key) ? send(key) : nil
+        when 'object'
+          request_body[key] = respond_to?(key) ? send(key) : generate_request_body(value)
+        else
+          raise 'unknown type'
+        end
+      end
+      request_body
     end
 
     def params
