@@ -44,7 +44,12 @@ module RspecApiDocumentation::DSL
       if http_method == :get && !query_string.blank?
         path_or_query += "?#{query_string}"
       elsif [:put, :post, :patch].include?(http_method) && example.metadata[:request_body]
-        params_or_body = generate_request_body(example.metadata[:request_body][:schema])
+        generated_body = generate_request_body(example.metadata[:request_body][:schema])
+        params_or_body = if example.metadata[:request_body][:type] == 'application/json'
+                           generated_body.to_json
+                         else
+                           generated_body
+                         end
       elsif respond_to?(:raw_post)
         params_or_body = raw_post
       else
