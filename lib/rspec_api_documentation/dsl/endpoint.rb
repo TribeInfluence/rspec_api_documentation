@@ -206,9 +206,15 @@ module RspecApiDocumentation::DSL
     def extra_params
       return {} if @extra_params.nil?
       @extra_params.inject({}) do |h, (k, v)|
-        v = v.is_a?(Hash) ? v.stringify_keys : v
+        v = v.is_a?(Hash) ? deep_stringify_keys(v) : v
         h[k.to_s] = v
         h
+      end
+    end
+
+    def deep_stringify_keys(hash)
+      hash.each_with_object({}) do |(k, v), result|
+        result[k.to_s] = v.is_a?(Hash) ? deep_stringify_keys(v) : v
       end
     end
 

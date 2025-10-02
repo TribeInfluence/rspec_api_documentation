@@ -6,7 +6,7 @@ module RspecApiDocumentation::DSL
     module ClassMethods
       def self.define_action(method)
         define_method method do |*args, &block|
-          options = args.extract_options!
+          options = extract_options_from(args)
           options[:method] = method
           if metadata[:route_uri]
             options[:route] = metadata[:route_uri]
@@ -46,7 +46,7 @@ module RspecApiDocumentation::DSL
       def route(*args, &block)
         raise "You must define the route URI"  if args[0].blank?
         raise "You must define the route name" if args[1].blank?
-        options = args.extract_options!
+        options = extract_options_from(args)
         options[:route_uri] = args[0].gsub(/\{.*\}/, "")
         options[:route_optionals] = (optionals = args[0].match(/(\{.*\})/) and optionals[-1])
         options[:route_name] = args[1]
@@ -106,7 +106,7 @@ module RspecApiDocumentation::DSL
       private
 
       def field_specification(name, *args)
-        options = args.extract_options!
+        options = extract_options_from(args)
         description = args.pop || "#{Array(options[:scope]).join(" ")} #{name}".humanize
 
         options.merge(:name => name.to_s, :description => description)
@@ -142,6 +142,10 @@ module RspecApiDocumentation::DSL
 
       def parameter_keys
         parameters.map { |param| param[:name] }
+      end
+
+      def extract_options_from(args)
+        args.last.is_a?(Hash) ? args.pop : {}
       end
     end
 

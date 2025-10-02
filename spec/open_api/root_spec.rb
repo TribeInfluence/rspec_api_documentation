@@ -31,7 +31,25 @@ describe RspecApiDocumentation::OpenApi::Root do
       hash = YAML.load_file(File.expand_path('../../fixtures/open_api.yml', __FILE__))
       root = described_class.new(hash)
 
-      expect(JSON.parse(JSON.generate(root.as_json))).to eq(hash)
+      # Recursively compare two hashes/arrays and print the first difference
+      def deep_diff(a, b, path = [])
+        return if a == b
+        if a.is_a?(Hash) && b.is_a?(Hash)
+          (a.keys | b.keys).each do |k|
+            deep_diff(a[k], b[k], path + [k])
+          end
+        elsif a.is_a?(Array) && b.is_a?(Array)
+          [a.size, b.size].max.times do |i|
+            deep_diff(a[i], b[i], path + [i])
+          end
+        else
+          puts "Difference at #{path.join(' > ')}: expected #{b.inspect}, got #{a.inspect}"
+        end
+      end
+
+      actual = JSON.parse(JSON.generate(root.as_json))
+      deep_diff(actual, hash)
+      expect(actual).to eq(hash)
     end
   end
 end
